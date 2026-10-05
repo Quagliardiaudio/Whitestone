@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>com.microchip.mplab.nbide.embedded.makeproject</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/make-project/1">
+            <name>P331_PIC18-K42_Unified</name>
+            <creation-uuid>4c37c92e-4a2e-4ae6-9a07-e45d2e6ad8f1</creation-uuid>
+            <make-project-type>0</make-project-type>
+            <c-extensions>c</c-extensions>
+            <cpp-extensions/>
+            <header-extensions>h</header-extensions>
+            <asminc-extensions/>
+            <sourceEncoding>ISO-8859-1</sourceEncoding>
+            <make-dep-projects/>
+            <sourceRootList>
+                <sourceRootElem>.</sourceRootElem>
+            </sourceRootList>
+            <confList>
+                <confElem>
+                    <name>default</name>
+                    <type>2</type>
+                </confElem>
+                <confElem>
+                    <name>EVL</name>
+                    <type>2</type>
+                </confElem>
+                <confElem>
+                    <name>ORIGINAL</name>
+                    <type>2</type>
+                </confElem>
+            </confList>
+            <formatting>
+                <project-formatting-style>false</project-formatting-style>
+            </formatting>
+        </data>
+        <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
+            <word>attenuations</word>
+            <word>autostandby</word>
+            <word>debounce</word>
+            <word>debounced</word>
+            <word>debouncers</word>
+            <word>debouncing</word>
+            <word>Exar</word>
+            <word>feedforward</word>
+            <word>Fosc</word>
+            <word>init</word>
+            <word>preamp</word>
+            <word>repurposing</word>
+            <word>uchar</word>
+        </spellchecker-wordlist>
+    </configuration>
+</project>

@@ -1,0 +1,12 @@
+# MPLAB X build outputs
+build/
+dist/
+debug/
+nbproject/private/
+
+# OS / Office clutter
+.DS_Store
+__MACOSX/
+desktop.ini
+~$*
+*~

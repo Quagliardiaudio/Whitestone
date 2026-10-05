@@ -1,0 +1,9 @@
+MPLAB X Watch List: 111C88EF-7DE7-4f63-96F8-D54C51A6C4DB
+tmp,
+loading_knob,
+channel,
+debouncedGPIO_Values[1].Bits.dFILT_EN,
+debouncedGPIO_Values[1].Bits.dFILT_HP_EN,
+debouncedGPIO_Values[1].Bits.dFILT_LP_EN,
+outlevel_gain_desired,
+outlevel_override,
