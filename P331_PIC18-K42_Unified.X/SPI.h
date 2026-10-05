@@ -16,8 +16,8 @@ uchar_t get_SPI_Data(void);
 uchar_t put_SPI_Shift(uint16_t);
 uchar_t put_SPI(uchar_t);
 
-uchar_t writeSPI_XR_GPIO(uchar_t chip_select, uchar_t command, uchar_t data);
-extern uchar_t readSPI_XR_GPIO(uchar_t chip_select, uchar_t command);
+uchar_t writeSPI_GPIO_EXP(uchar_t chip_select, uchar_t command, uchar_t data);
+extern uchar_t readSPI_GPIO_EXP(uchar_t chip_select, uchar_t command);
 
 #endif
     

@@ -3,8 +3,10 @@
 
 #include "Globals.h"
 #include "Controls.h"  //includes typedef for uchar
+#include "Hardware.h" //GPIO_EXPANDER selection
 
-//Note that GPIO expansion chips are made by Exar, abbreviated as XR in many functions or enums/constants herein
+//Note: the GPIO expansion chip is selected with GPIO_EXPANDER in Hardware.h: either the original Exar/MaxLinear XRA1405 (abbreviated XR)
+//      or its replacement, the Microchip MCP23S18 (abbreviated MCP). Application code uses the chip-neutral GPX_ register names defined below.
 
 //prototypes
 void GPIO_INIT(void);        //Initialize IO chips
@@ -20,6 +22,7 @@ enum {
 //* this define creates the equivalent of Left CS_x or Right CS_x from the calculation depending upon which channel using #define LEFT 0 or #define RIGHT 1 channels 
 #define CALCULATE_CS(zero_based_channel_LEFTorRIGHT_hash_defined, individual_CS_A_thru_D_for_this_channel) (uchar_t)((zero_based_channel_LEFTorRIGHT_hash_defined << 2) + (individual_CS_A_thru_D_for_this_channel))  /*(note bit shifting to left by 1 effectively multiplies by 2; shifting by 2 multiplies by 4 (2*2))*/
 
+#if GPIO_EXPANDER == GPIO_EXP_XRA1405
 //handy enums for GPIO expansion chips (MFG: Exar)
 enum {
     GSR1 	=	0x00U,	//	GSR1 - GPIO State for P0-P7                                         Read-Only	Default: 0xXX	
@@ -45,6 +48,66 @@ enum {
     IFR1 	=	0x14U,	//	IFR1 - Input Filter Enable/Disable for P0-P7                        Read/Write	Default: 0xFF	
     IFR2 	=	0x15U	//	IFR2 - Input Filter Enable/Disable for P8-P15                       Read/Write	Default: 0xFF	
 };
+
+// chip-neutral register names; port 1 = P0-P7, port 2 = P8-P15 (port 2 register is always port 1 register + 1)
+#define GPX_STATE1   GSR1   /* read pin states   */
+#define GPX_STATE2   GSR2
+#define GPX_OUTPUT1  OCR1   /* output latch      */
+#define GPX_OUTPUT2  OCR2
+#define GPX_DIR1     GCR1   /* 1 = input, 0 = output */
+#define GPX_DIR2     GCR2
+#define GPX_PULLUP1  PUR1   /* 1 = pull-up enabled */
+#define GPX_PULLUP2  PUR2
+
+#elif GPIO_EXPANDER == GPIO_EXP_MCP23S18
+//handy enums for GPIO expansion chips (MFG: Microchip MCP23S18), register addresses with IOCON.BANK = 0 (power-up default)
+//MCP23S18 port A (GPA0-GPA7) replaces XRA1405 P0-P7, port B (GPB0-GPB7) replaces P8-P15
+enum {
+    MCP_IODIRA   =  0x00U,  //  IODIRA   - I/O Direction for GPA0-7 (1 = input)                    Read/Write  Default: 0xFF
+    MCP_IODIRB   =  0x01U,  //  IODIRB   - I/O Direction for GPB0-7 (1 = input)                    Read/Write  Default: 0xFF
+    MCP_IPOLA    =  0x02U,  //  IPOLA    - Input Polarity for GPA0-7                               Read/Write  Default: 0x00
+    MCP_IPOLB    =  0x03U,  //  IPOLB    - Input Polarity for GPB0-7                               Read/Write  Default: 0x00
+    MCP_GPINTENA =  0x04U,  //  GPINTENA - Interrupt-on-change Enable for GPA0-7                   Read/Write  Default: 0x00
+    MCP_GPINTENB =  0x05U,  //  GPINTENB - Interrupt-on-change Enable for GPB0-7                   Read/Write  Default: 0x00
+    MCP_DEFVALA  =  0x06U,  //  DEFVALA  - Default Compare Value for GPA0-7                        Read/Write  Default: 0x00
+    MCP_DEFVALB  =  0x07U,  //  DEFVALB  - Default Compare Value for GPB0-7                        Read/Write  Default: 0x00
+    MCP_INTCONA  =  0x08U,  //  INTCONA  - Interrupt Control for GPA0-7                            Read/Write  Default: 0x00
+    MCP_INTCONB  =  0x09U,  //  INTCONB  - Interrupt Control for GPB0-7                            Read/Write  Default: 0x00
+    MCP_IOCON    =  0x0AU,  //  IOCON    - Configuration (also mirrored at 0x0B)                   Read/Write  Default: 0x00
+    MCP_GPPUA    =  0x0CU,  //  GPPUA    - Input Pull-up (~100k) Enable for GPA0-7                 Read/Write  Default: 0x00
+    MCP_GPPUB    =  0x0DU,  //  GPPUB    - Input Pull-up (~100k) Enable for GPB0-7                 Read/Write  Default: 0x00
+    MCP_INTFA    =  0x0EU,  //  INTFA    - Interrupt Flag for GPA0-7                               Read        Default: 0x00
+    MCP_INTFB    =  0x0FU,  //  INTFB    - Interrupt Flag for GPB0-7                               Read        Default: 0x00
+    MCP_INTCAPA  =  0x10U,  //  INTCAPA  - Interrupt Capture for GPA0-7                            Read        Default: 0x00
+    MCP_INTCAPB  =  0x11U,  //  INTCAPB  - Interrupt Capture for GPB0-7                            Read        Default: 0x00
+    MCP_GPIOA    =  0x12U,  //  GPIOA    - Port state for GPA0-7                                   Read/Write  Default: 0x00
+    MCP_GPIOB    =  0x13U,  //  GPIOB    - Port state for GPB0-7                                   Read/Write  Default: 0x00
+    MCP_OLATA    =  0x14U,  //  OLATA    - Output Latch for GPA0-7                                 Read/Write  Default: 0x00
+    MCP_OLATB    =  0x15U   //  OLATB    - Output Latch for GPB0-7                                 Read/Write  Default: 0x00
+};
+
+#define MCP_OPCODE_WRITE  0x40U  /* SPI opcode 0100 000 R/W; MCP23S18 has no hardware address pins, so the address bits are always 0 */
+#define MCP_OPCODE_READ   0x41U
+
+// IOCON bits: BANK(7) MIRROR(6) SEQOP(5) -(4) -(3) ODR(2) INTPOL(1) INTCC(0)
+// BANK = 0   : A/B registers paired at consecutive addresses (required by the port 1 + 1 = port 2 math in GPIO.c)
+// SEQOP = 1  : no address auto-increment; every SPI frame accesses exactly one register
+// ODR = 1    : INTA/INTB open-drain, like the XRA1405 IRQ# output they replace
+#define MCP_IOCON_INIT    0b00100100U
+
+// chip-neutral register names; port 1 = GPA0-7 (was P0-P7), port 2 = GPB0-7 (was P8-P15) (port 2 register is always port 1 register + 1)
+#define GPX_STATE1   MCP_GPIOA   /* read pin states   */
+#define GPX_STATE2   MCP_GPIOB
+#define GPX_OUTPUT1  MCP_OLATA   /* output latch      */
+#define GPX_OUTPUT2  MCP_OLATB
+#define GPX_DIR1     MCP_IODIRA  /* 1 = input, 0 = output */
+#define GPX_DIR2     MCP_IODIRB
+#define GPX_PULLUP1  MCP_GPPUA   /* 1 = pull-up enabled */
+#define GPX_PULLUP2  MCP_GPPUB
+
+#else
+#error "GPIO_EXPANDER in Hardware.h must be GPIO_EXP_XRA1405 or GPIO_EXP_MCP23S18"
+#endif
 
 // GPIO channel frame; bits directly from GPIO expansion chip schematics (plural) for all signals on each of the GPIO expansion chips
 // Note convention for inputs and outputs with active high or active low configurations for variable (bits) prefixes:

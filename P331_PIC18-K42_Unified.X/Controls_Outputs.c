@@ -287,7 +287,7 @@ void Display_Write(uchar_t channel, uchar_t idx_char)
     debouncedGPIO_Values[channel].byte_groups[DISPLAY_BYTE_GROUP] = bmpDisplay_Value[idx_char];
     __delay_ms(2);
     
-    writeSPI_XR_GPIO(CALCULATE_CS(channel, CS_D), OCR2, debouncedGPIO_Values[channel].byte_groups[DISPLAY_BYTE_GROUP]);   //OCR2 is upper byte (P8-P15) of GPIO expansion chip
+    writeSPI_GPIO_EXP(CALCULATE_CS(channel, CS_D), GPX_OUTPUT2, debouncedGPIO_Values[channel].byte_groups[DISPLAY_BYTE_GROUP]);   //GPX_OUTPUT2 is upper byte (P8-P15) of GPIO expansion chip
     
     return;
 }
@@ -299,7 +299,7 @@ void set_Display_decimal_point(uchar_t channel, uchar_t on)
     __delay_ms(2);
 
     // note that LEDs are active low... decimal point is also active low hence 0b0... for "on"
-    writeSPI_XR_GPIO(CALCULATE_CS(channel, CS_D), OCR2, (uchar_t) on ? 0b01111111U & LED_Display_byte : 0b10000000U | LED_Display_byte);   //OCR2 is upper byte (P8-P15) of GPIO expansion chip
+    writeSPI_GPIO_EXP(CALCULATE_CS(channel, CS_D), GPX_OUTPUT2, (uchar_t) on ? 0b01111111U & LED_Display_byte : 0b10000000U | LED_Display_byte);   //GPX_OUTPUT2 is upper byte (P8-P15) of GPIO expansion chip
     
     return;
 }

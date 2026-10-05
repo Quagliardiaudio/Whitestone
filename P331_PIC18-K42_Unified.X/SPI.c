@@ -28,7 +28,37 @@ uchar_t put_SPI(uchar_t SPIData)
   return SPI1_ExchangeByte(SPIData);
 }
 
-uchar_t writeSPI_XR_GPIO(uchar_t chip_select, uchar_t command, uchar_t data)
+#if GPIO_EXPANDER == GPIO_EXP_MCP23S18
+// Microchip MCP23S18 SPI frame is 3 bytes: [opcode 0x40 write / 0x41 read] [register address] [data]
+// (no hardware address pins on the MCP23S18, each chip is reached through its own chip select only)
+uchar_t writeSPI_GPIO_EXP(uchar_t chip_select, uchar_t command, uchar_t data)
+{
+    uchar_t return_data = 0x00;
+   set_cs(chip_select);
+    put_SPI(MCP_OPCODE_WRITE);                          //device opcode with read/write bit = 0 (write)
+    put_SPI(command);                                   //register address, sent as-is (no shifting as in the Exar chip)
+   __delay_us(100);
+    return_data = put_SPI(data);
+    LATA = 0xFFU; //unset chip selects  (all ones; active low)
+    __delay_us(100); 
+    
+    return ((uchar_t) return_data);
+    
+}
+uchar_t readSPI_GPIO_EXP(uchar_t chip_select, uchar_t command)
+{
+    uchar_t return_data = 0x00;
+      set_cs(chip_select);
+    put_SPI(MCP_OPCODE_READ);                           //device opcode with read/write bit = 1 (read)
+    put_SPI(command);                                   //register address
+    return_data = put_SPI(0x00);                            //bogus data to start SPI clocking of 8 bits
+    LATA = 0xFF; //unset chip selects (all ones; active low)
+    __delay_us(100); 
+    return (return_data);  
+}
+
+#else  // GPIO_EXP_XRA1405
+uchar_t writeSPI_GPIO_EXP(uchar_t chip_select, uchar_t command, uchar_t data)
 {
     uchar_t return_data = 0x00;
    set_cs(chip_select);
@@ -41,7 +71,7 @@ uchar_t writeSPI_XR_GPIO(uchar_t chip_select, uchar_t command, uchar_t data)
     return ((uchar_t) return_data);
     
 }
-uchar_t readSPI_XR_GPIO(uchar_t chip_select, uchar_t command)
+uchar_t readSPI_GPIO_EXP(uchar_t chip_select, uchar_t command)
 {
     uchar_t return_data = 0x00;
       set_cs(chip_select);
@@ -51,6 +81,7 @@ uchar_t readSPI_XR_GPIO(uchar_t chip_select, uchar_t command)
     __delay_us(100); 
     return (return_data);  
 }
+#endif
 
 #ifdef OLD_PIC_P331_DO_NOT_USE_FOR_NEW_PIC18F26K42   
     

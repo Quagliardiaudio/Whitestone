@@ -9,6 +9,11 @@
 #define HT_READY           PORTCbits.RC2 /*Output to solid state relays on Power Supply to bypass inrush current limiting devices*/
 
 
+// GPIO expansion chip fitted on the PCB (8 chips: CS_A..CS_D for each channel)
+#define GPIO_EXP_XRA1405   1   /* MaxLinear (Exar) XRA1405IL24-F, original boards */
+#define GPIO_EXP_MCP23S18  2   /* Microchip MCP23S18-E/MJ, replacement part */
+
+#define GPIO_EXPANDER      GPIO_EXP_MCP23S18   /* select the chip fitted on the board being programmed */
 
 
 #endif
