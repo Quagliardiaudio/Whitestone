@@ -22,8 +22,8 @@ void GPIO_INIT(void)
  
     __delay_ms(10);
 
-#if GPIO_EXPANDER == GPIO_EXP_MCP23S18
-    //set the MCP23S18 configuration register first on all 8 chips (see MCP_IOCON_INIT in GPIO.h)
+#if GPIO_EXP_IS_MCP23SXX
+    //set the MCP23S17 / MCP23S18 configuration register first on all 8 chips (see MCP_IOCON_INIT in GPIO.h)
     for(uchar_t chip_select = CALCULATE_CS(LEFT, CS_A); chip_select <= CALCULATE_CS(RIGHT, CS_D); chip_select++)
     {
         writeSPI_GPIO_EXP(chip_select, MCP_IOCON, MCP_IOCON_INIT);

@@ -28,9 +28,9 @@ uchar_t put_SPI(uchar_t SPIData)
   return SPI1_ExchangeByte(SPIData);
 }
 
-#if GPIO_EXPANDER == GPIO_EXP_MCP23S18
-// Microchip MCP23S18 SPI frame is 3 bytes: [opcode 0x40 write / 0x41 read] [register address] [data]
-// (no hardware address pins on the MCP23S18, each chip is reached through its own chip select only)
+#if GPIO_EXP_IS_MCP23SXX
+// Microchip MCP23S17 / MCP23S18 SPI frame is 3 bytes: [opcode 0x40 write / 0x41 read] [register address] [data]
+// (hardware addressing not used, each chip is reached through its own chip select only)
 uchar_t writeSPI_GPIO_EXP(uchar_t chip_select, uchar_t command, uchar_t data)
 {
     uchar_t return_data = 0x00;
