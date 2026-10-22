@@ -6,7 +6,7 @@
 #include "Hardware.h" //GPIO_EXPANDER selection
 
 //Note: the GPIO expansion chip is selected with GPIO_EXPANDER in Hardware.h: either the original Exar/MaxLinear XRA1405 (abbreviated XR)
-//      or its replacement, the Microchip MCP23S18 (abbreviated MCP). Application code uses the chip-neutral GPX_ register names defined below.
+//      or its replacement, the Microchip MCP23S17T-E/ML (abbreviated MCP). Application code uses the chip-neutral GPX_ register names defined below.
 
 //prototypes
 void GPIO_INIT(void);        //Initialize IO chips
@@ -59,8 +59,8 @@ enum {
 #define GPX_PULLUP1  PUR1   /* 1 = pull-up enabled */
 #define GPX_PULLUP2  PUR2
 
-#elif GPIO_EXP_IS_MCP23SXX
-//handy enums for GPIO expansion chips (MFG: Microchip MCP23S17 / MCP23S18), register addresses with IOCON.BANK = 0 (power-up default)
+#elif GPIO_EXPANDER == GPIO_EXP_MCP23S17
+//handy enums for GPIO expansion chips (MFG: Microchip MCP23S17), register addresses with IOCON.BANK = 0 (power-up default)
 //port A (GPA0-GPA7) replaces XRA1405 P0-P7, port B (GPB0-GPB7) replaces P8-P15
 enum {
     MCP_IODIRA   =  0x00U,  //  IODIRA   - I/O Direction for GPA0-7 (1 = input)                    Read/Write  Default: 0xFF
@@ -86,14 +86,14 @@ enum {
     MCP_OLATB    =  0x15U   //  OLATB    - Output Latch for GPB0-7                                 Read/Write  Default: 0x00
 };
 
-#define MCP_OPCODE_WRITE  0x40U  /* SPI opcode 0100 A2A1A0 R/W with address 000: MCP23S18 has no address pins; MCP23S17 ignores A2-A0 while IOCON.HAEN = 0 */
+#define MCP_OPCODE_WRITE  0x40U  /* SPI opcode 0100 A2A1A0 R/W with address 000; A2-A0 pins are ignored while IOCON.HAEN = 0 */
 #define MCP_OPCODE_READ   0x41U
 
-// IOCON bits: BANK(7) MIRROR(6) SEQOP(5) DISSLW(4, S17 only) HAEN(3, S17 only) ODR(2) INTPOL(1) INTCC(0)
+// IOCON bits: BANK(7) MIRROR(6) SEQOP(5) DISSLW(4) HAEN(3) ODR(2) INTPOL(1) INTCC(0)
 // BANK = 0   : A/B registers paired at consecutive addresses (required by the port 1 + 1 = port 2 math in GPIO.c)
 // SEQOP = 1  : no address auto-increment; every SPI frame accesses exactly one register
 // ODR = 1    : INTA/INTB open-drain, like the XRA1405 IRQ# output they replace
-// HAEN = 0   : (MCP23S17) hardware address pins ignored; each chip is reached through its own chip select only
+// HAEN = 0   : hardware address pins A2-A0 ignored; each chip is reached through its own chip select only
 #define MCP_IOCON_INIT    0b00100100U
 
 // chip-neutral register names; port 1 = GPA0-7 (was P0-P7), port 2 = GPB0-7 (was P8-P15) (port 2 register is always port 1 register + 1)
@@ -107,7 +107,7 @@ enum {
 #define GPX_PULLUP2  MCP_GPPUB
 
 #else
-#error "GPIO_EXPANDER in Hardware.h must be GPIO_EXP_XRA1405, GPIO_EXP_MCP23S17 or GPIO_EXP_MCP23S18"
+#error "GPIO_EXPANDER in Hardware.h must be GPIO_EXP_XRA1405 or GPIO_EXP_MCP23S17"
 #endif
 
 // GPIO channel frame; bits directly from GPIO expansion chip schematics (plural) for all signals on each of the GPIO expansion chips

@@ -1,8 +1,8 @@
-# Migración XRA1405 → MCP23S17 / MCP23S18 (expansores GPIO, 8 por PCB)
+# Migración XRA1405 → MCP23S17 (expansores GPIO, 8 por PCB)
 
 Chip original: MaxLinear (Exar) **XRA1405IL24-F**, 24-QFN
 
-Según los archivos de fabricación de **P331_Rear_IO vx3** (BOM y CPL), el chip que va en la placa es el **MCP23S17T-E/ML** (28-QFN 6×6 mm), designadores Q14, Q16, Q18, Q23, Q25, Q27, Q35 y Q36. El reemplazo que se había mencionado antes era el **MCP23S18-E/MJ** (24-QFN). El firmware soporta los dos.
+Reemplazo: Microchip **MCP23S17T-E/ML** (28-QFN 6×6 mm). Es el chip de **P331_Rear_IO vx3**, en Q14, Q16, Q18, Q23, Q25, Q27, Q35 y Q36 (BOM y CPL).
 
 ## Selección del chip
 
@@ -10,16 +10,14 @@ En `P331_PIC18-K42_Unified.X/Hardware.h`:
 
 ```c
 #define GPIO_EXPANDER      GPIO_EXP_MCP23S17   // P331_Rear_IO vx3 (por defecto)
-//#define GPIO_EXPANDER    GPIO_EXP_MCP23S18
 //#define GPIO_EXPANDER    GPIO_EXP_XRA1405    // placas con el chip original
 ```
 
-- MCP23S17 y MCP23S18 usan el mismo código: tienen el mismo mapa de registros y la misma trama SPI.
 - Con `GPIO_EXP_XRA1405`, el firmware envía por SPI exactamente los mismos bytes que la versión anterior (lo verifiqué comparando la secuencia completa de init, lectura y escritura).
 
 ## Cambios en el firmware
 
-| | XRA1405 | MCP23S17 / MCP23S18 |
+| | XRA1405 | MCP23S17 |
 |---|---|---|
 | Trama SPI | 2 bytes: `(reg<<1) \| R/W` + dato | 3 bytes: `0x40`/`0x41` + dirección + dato |
 | Leer pines | GSR1/GSR2 (0x00/0x01) | GPIOA/GPIOB (0x12/0x13) |
@@ -35,7 +33,7 @@ En `P331_PIC18-K42_Unified.X/Hardware.h`:
 
 ## Lo que se pudo verificar con los archivos de hardware (BOM, CPL, Gerbers)
 
-- **Salidas:** el MCP23S17 tiene salidas push-pull. Por eso no aplica el problema de open-drain que tendría el MCP23S18. Las salidas manejan los ULN2803A (U15–U31, 10 piezas) que activan los relés, y eso funciona directo con push-pull.
+- **Salidas:** el MCP23S17 tiene salidas push-pull. Las salidas manejan los ULN2803A (U15–U31, 10 piezas) que activan los relés, y eso funciona directo con push-pull.
 - **Resistencias de 100 Ω en serie en el RESET** (R_Reset14…R_Reset36): son compatibles con el pulso de reset del firmware (10 ms en bajo).
 - Los Gerbers **no traen información de nets** (no son X2 con atributos de red). Por eso no se pudo confirmar desde ellos el mapeo de pines ni cómo están conectados A0–A2.
 

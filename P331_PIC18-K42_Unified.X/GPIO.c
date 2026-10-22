@@ -22,8 +22,8 @@ void GPIO_INIT(void)
  
     __delay_ms(10);
 
-#if GPIO_EXP_IS_MCP23SXX
-    //set the MCP23S17 / MCP23S18 configuration register first on all 8 chips (see MCP_IOCON_INIT in GPIO.h)
+#if GPIO_EXPANDER == GPIO_EXP_MCP23S17
+    //set the MCP23S17 configuration register first on all 8 chips (see MCP_IOCON_INIT in GPIO.h)
     for(uchar_t chip_select = CALCULATE_CS(LEFT, CS_A); chip_select <= CALCULATE_CS(RIGHT, CS_D); chip_select++)
     {
         writeSPI_GPIO_EXP(chip_select, MCP_IOCON, MCP_IOCON_INIT);
@@ -102,7 +102,7 @@ void write_All_GPIO_Bytes(void)
     {
         // use GPIO_BYTE_GROUPS_T_SZ -1 to prevent writing to the display at the very end of the GPIO memory bytes; display writes (for debug) happen ad hoc elsewhere at the time of the display write function call
         for (uchar_t byte_group = 0; byte_group < GPIO_BYTE_GROUPS_T_SZ - 1; byte_group++) // iterate through the byte_groups, to set raw GPIO data into the master GPIO map struct (where casted)
-        {   //note: writing output bits/bytes to input configured pins has no effect on either the XRA1405 or the MCP23S18 (only the output latch is written)
+        {   //note: writing output bits/bytes to input configured pins has no effect on either the XRA1405 or the MCP23S17 (only the output latch is written)
 
             //(16-bits = 2 byte groups for each chip), yet our SPI is 8-bit wide data; even numbered byte
             uchar_t even;         //determine if we need to address low half of the GPIO expansion chip, P0-P7 or high half, P8-P15 
